@@ -1,14 +1,3 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import { QrcodeStream } from 'vue-qrcode-reader'
-
-function onDetect(detectedCodes: { rawValue: string }[]) {
-  console.log({ detectedCodes })
-  console.log({ json: JSON.parse(detectedCodes[0].rawValue) })
-}
-</script>
-
 <template>
   <header>
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
@@ -22,13 +11,43 @@ function onDetect(detectedCodes: { rawValue: string }[]) {
       </nav>
 
       <div>
-        <qrcode-stream @detect="onDetect"></qrcode-stream>
+        <qrcode-stream @detect="onDetect" :paused="dialogVisible"></qrcode-stream>
+        <details class="mt-3" v-if="isDebug">
+          <summary>Debug</summary>
+          <pre>{{ qrCode }}</pre>
+        </details>
       </div>
     </div>
   </header>
 
   <RouterView />
 </template>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader'
+import { RouterLink, RouterView } from 'vue-router'
+import HelloWorld from './components/HelloWorld.vue'
+
+const dialogVisible = ref(false)
+const isDebug = ref(true)
+
+const qrCode = ref<{
+  tid: string
+  eid: number
+  uid: string
+  name: string
+  items: string
+  email: string
+  event: string
+  event_date: string
+  event_targets: string[]
+}>()
+function onDetect(detectedCodes: DetectedBarcode[]) {
+  if (detectedCodes?.[0]?.rawValue) {
+    qrCode.value = JSON.parse(detectedCodes[0].rawValue)
+  }
+}
+</script>
 
 <style scoped>
 header {
